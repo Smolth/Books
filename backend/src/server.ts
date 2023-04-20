@@ -8,22 +8,16 @@ const server = fastify({ logger: true })
 
 initDB()
 
-server.get('/ping', async (req, reply) => {
+server.get('/ping', async (req, reply: FastifyReply) => {
   return { pong: 'it worked!' }
 })
 
-server.get('/', async function (req, reply) { //GET - read 
+server.get('/', async function (req, reply: FastifyReply) { //GET - read 
   try {
     const toDoList = await ToDo.findAll(); //SELECT * FROM "ToDos"
-    reply.type('application/json');
-    return {
-      toDoList
-    }
+    reply.send(toDoList);
   } catch (error) {
-    reply.type('application/json').code(500);
-    return {
-      error: fastify.errorCodes.FST_ERR_BAD_STATUS_CODE,
-    }
+    reply.code(500).send({message: "This is error!"});
   };
 })
 
@@ -34,16 +28,11 @@ server.post('/todos', async function (req: FastifyRequestBody, reply: FastifyRep
       description: req.body.description,
       isCompleted: req.body.isCompleted
     });
-    reply.type('application/json').code(200);
-    return {
-      crToDo,
-    }
+    reply.code(200).send(crToDo);
+    console.log(req.body.description)
   } catch (error) {
     console.log("This is error!", error)
-    reply.type('application/json').code(500);
-    return {
-      error: fastify.errorCodes.FST_ERR_BAD_STATUS_CODE,
-    }
+    reply.code(500).send({message: "This is error!"});
   };
 })
 
@@ -51,20 +40,13 @@ server.get('/todos/:id', async function (req: FastifyRequestParams, reply: Fasti
   try {
     const oneToDo = await ToDo.findByPk(req.params.id);
     if (!oneToDo) {
-      reply.type('application/json').code(404);
-      return {
+      reply.code(404).send({
         message: "ToDo not found with ID!",
-      }
+      });
     }
-    reply.type('application/json').code(200);
-    return {
-      oneToDo
-    }
+    reply.code(200).send(oneToDo);
   } catch (error) {
-    reply.type('application/json').code(500);
-    return {
-      error: fastify.errorCodes.FST_ERR_BAD_STATUS_CODE,
-    }
+    reply.code(500).send({message: "This is error!"});
   };
 })
 
@@ -73,23 +55,15 @@ server.patch('/todos/:id', async function (req: FastifyRequestBodyWithParams, re
   try {
     const findToDo = await ToDo.findByPk(req.params.id);
     if (!findToDo) {
-      reply.type('application/json').code(404);
-      return {
-        message: "ToDo not found with ID!",
-      }
+      reply.code(404).send({message: "ToDo not found with ID!"});
+    } else {await findToDo.update(req.body)
+      console.log(req.body.title)
     }
-    await findToDo.update({ ...req.body })
     const updToDo = await ToDo.findByPk(req.params.id);
-    reply.type('application/json').code(200);
-    return {
-      updToDo
-    }
+    reply.code(200).send(updToDo);
   } catch (error) {
     console.log("This is error!", error)
-    reply.type('application/json').code(500);
-    return {
-      error: fastify.errorCodes.FST_ERR_BAD_STATUS_CODE,
-    }
+    reply.code(500).send({message: "This is error!"});
   };
 })
 
@@ -99,15 +73,9 @@ server.delete('/todos', async function (req, reply: FastifyReply) { //DELETE - d
     const allDelToDo = await (ToDo.destroy({
       where: {},
     }));
-    reply.type('application/json');
-    return {
-      allDelToDo
-    };
+    reply.send(allDelToDo);
   } catch (error) {
-    reply.type('application/json').code(500);
-    return {
-      error: fastify.errorCodes.FST_ERR_BAD_STATUS_CODE,
-    }
+    reply.code(500).send({message: "This is error!"});
   };
 })
 
@@ -118,15 +86,12 @@ server.delete('/todos/:id', async function (req: FastifyRequestParams, reply: Fa
         id: req.params.id,
       }
     }))
-    reply.type('application/json');
+    reply.send(ToDo);
     return {
       delToDo
     };
   } catch (error) {
-    reply.type('application/json').code(500);
-    return {
-      error: fastify.errorCodes.FST_ERR_BAD_STATUS_CODE,
-    }
+    reply.code(500).send({message: "This is error!"});
   };
 })
 
