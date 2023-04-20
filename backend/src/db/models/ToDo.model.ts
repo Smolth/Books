@@ -16,9 +16,10 @@ export default class ToDo extends Model {
 
   @Column({
     type: DataType.TEXT,
-    comment: "Описание"
+    comment: "Описание",
+    defaultValue: ""
   })
-  description: string = '';
+  description: string | undefined;
 
   @Column({
     type: DataType.BOOLEAN
